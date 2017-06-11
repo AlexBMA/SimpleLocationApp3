@@ -1,5 +1,9 @@
 package com.example.alexandru.simplelocationapp3;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,17 +15,16 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
-import com.google.android.gms.location.ActivityRecognitionApi;
-import com.google.android.gms.location.ActivityRecognitionResult;
+import com.google.android.gms.location.DetectedActivity;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
 
     protected final String TAG = "TAG";
     protected  GoogleApiClient mGoogleApiClient;
-    protected  ActivityRecognitionResult mActivityRecognitionResult;
-    protected  ActivityRecognition mActivityRecognition;
-    protected  ActivityRecognitionApi mActivityRecognitionApi;
+    protected ActivityDetectionBroadcastReceiver mBroadcastReceiver;
     private TextView textViewDetected;
     private Button buttonRequest;
     private Button buttonRemove;
@@ -36,18 +39,44 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         textViewDetected = (TextView) findViewById(R.id.detectedActivities);
         buttonRequest = (Button) findViewById(R.id.request_activity_updates_button);
         buttonRemove = (Button) findViewById(R.id.remove_activity_updates_button);
-
+        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver();
         buildCreateApiClient();
     }
 
     private void buildCreateApiClient()
     {
 
-        mGoogleApiClient =new GoogleApiClient.Builder(getApplicationContext())
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(ActivityRecognition.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+    }
+
+    private String transformCodeIntoMessage(int type) {
+
+        Resources resource = this.getResources();
+        switch (type) {
+            case DetectedActivity.IN_VEHICLE:
+                return resource.getString(R.string.in_vehicle);
+            case DetectedActivity.ON_BICYCLE:
+                return resource.getString(R.string.on_bicycle);
+            case DetectedActivity.ON_FOOT:
+                return resource.getString(R.string.on_foot);
+            case DetectedActivity.RUNNING:
+                return resource.getString(R.string.running);
+            case DetectedActivity.STILL:
+                return resource.getString(R.string.still);
+            case DetectedActivity.WALKING:
+                return resource.getString(R.string.walking);
+            case DetectedActivity.TILTING:
+                return resource.getString(R.string.tilting);
+            case DetectedActivity.UNKNOWN:
+                return resource.getString(R.string.unknown);
+            default:
+                return resource.getString(R.string.unidentifiable_activity);
+        }
 
     }
 
@@ -57,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mGoogleApiClient.connect();
     }
 
-
     @Override
     protected void onStop() {
         if (mGoogleApiClient.isConnected()) {
@@ -65,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         super.onStop();
     }
-
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -85,6 +112,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e(TAG, "connection Failed");
 
+
+    }
+
+    public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
+
+        protected static final String TAG = "receiver";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            ArrayList<DetectedActivity> list = intent.getParcelableExtra(Constant.ACTIVITY_EXTRA);
+            int size = list.size();
+
+            String strStatus = "";
+            for (int i = 0; i < size; i++) {
+                DetectedActivity temp = list.get(i);
+                //String activityType = transformCodeIntoMessage(temp.getType());
+                //int chance = temp.getConfidence();
+                strStatus += transformCodeIntoMessage(temp.getType()) + " " + temp.getConfidence() + "% \n";
+
+            }
+            textViewDetected.setText(strStatus);
+        }
 
     }
 }
