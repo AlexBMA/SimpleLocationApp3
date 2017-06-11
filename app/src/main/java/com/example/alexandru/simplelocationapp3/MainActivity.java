@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -52,6 +53,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void requestActivityUpdatesButtonHandler(View view) {
+
+        if (!mGoogleApiClient.isConnected()) {
+            Toast.makeText(this, getString(R.string.not_connected),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         ActivityRecognition.ActivityRecognitionApi.
                 requestActivityUpdates(mGoogleApiClient, 5, getActivityDetectionPendingIntent()).
                 setResultCallback(this);
@@ -61,6 +69,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void removeActivityUpdatesButtonHandler(View view) {
+
+        if (!mGoogleApiClient.isConnected()) {
+            Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         ActivityRecognition.ActivityRecognitionApi.
                 removeActivityUpdates(mGoogleApiClient, getActivityDetectionPendingIntent())
                 .setResultCallback(this);
@@ -76,7 +90,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void buildCreateApiClient()
+    private synchronized void buildCreateApiClient()
     {
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -138,9 +152,8 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
 
         super.onResume();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addCategory(Constant.BROADCAST_ACTION);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, intentFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver,
+                new IntentFilter(Constant.BROADCAST_ACTION));
     }
 
 
@@ -182,15 +195,16 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            ArrayList<DetectedActivity> list = intent.getParcelableExtra(Constant.ACTIVITY_EXTRA);
-            int size = list.size();
+            ArrayList<DetectedActivity> updatedActivities = intent.getParcelableArrayListExtra(Constant.ACTIVITY_EXTRA);
+            int size = updatedActivities.size();
 
             String strStatus = "";
             for (int i = 0; i < size; i++) {
-                DetectedActivity temp = list.get(i);
+                DetectedActivity temp = updatedActivities.get(i);
                 //String activityType = transformCodeIntoMessage(temp.getType());
                 //int chance = temp.getConfidence();
                 strStatus += transformCodeIntoMessage(temp.getType()) + " " + temp.getConfidence() + "% \n";
+                Log.e(TAG, strStatus);
 
             }
             textViewDetected.setText(strStatus);
