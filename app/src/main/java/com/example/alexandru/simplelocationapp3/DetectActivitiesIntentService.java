@@ -2,12 +2,14 @@ package com.example.alexandru.simplelocationapp3;
 
 import android.app.IntentService;
 import android.content.Intent;
-
-import android.provider.SyncStateContract;
 import android.support.annotation.Nullable;
-
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.google.android.gms.location.ActivityRecognitionResult;
+import com.google.android.gms.location.DetectedActivity;
+
+import java.util.ArrayList;
 
 
 /**
@@ -28,9 +30,12 @@ public class DetectActivitiesIntentService extends IntentService{
 
         ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
 
+        Intent localIntent = new Intent(Constant.BROADCAST_ACTION);
+        ArrayList<DetectedActivity> list = (ArrayList) result.getProbableActivities();
+        Log.e(TAG, "activities detected");
 
-        Intent locaIntent = new Intent();
-
+        localIntent.putExtra(Constant.BROADCAST_ACTION, list);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
 
 
     }
