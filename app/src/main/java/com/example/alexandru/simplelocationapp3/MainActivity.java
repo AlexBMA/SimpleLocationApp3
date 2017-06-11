@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         buildCreateApiClient();
     }
 
+
     private void buildCreateApiClient()
     {
 
@@ -93,6 +94,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         super.onStop();
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
