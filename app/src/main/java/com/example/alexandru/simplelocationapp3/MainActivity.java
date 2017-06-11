@@ -79,6 +79,8 @@ public class MainActivity extends AppCompatActivity
                 removeActivityUpdates(mGoogleApiClient, getActivityDetectionPendingIntent())
                 .setResultCallback(this);
 
+
+        textViewDetected.setText("");
         buttonRequest.setEnabled(true);
         buttonRemove.setEnabled(false);
     }
