@@ -70,7 +70,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private PendingIntent getActivityDetectionPendingIntent() {
-        return null;
+        Intent intend = new Intent(this, DetectActivitiesIntentService.class);
+
+        return PendingIntent.getService(this, 0, intend, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
 
