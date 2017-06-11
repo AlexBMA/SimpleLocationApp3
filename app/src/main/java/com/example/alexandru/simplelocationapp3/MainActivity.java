@@ -18,12 +18,16 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.DetectedActivity;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+public class MainActivity extends AppCompatActivity
+        implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
 
 
     protected final String TAG = "TAG";
@@ -48,7 +52,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void requestActivityUpdatesButtonHandler(View view) {
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 5, getActivityDetectionPendingIntent()).
+        ActivityRecognition.ActivityRecognitionApi.
+                requestActivityUpdates(mGoogleApiClient, 5, getActivityDetectionPendingIntent()).
                 setResultCallback(this);
 
         buttonRequest.setEnabled(false);
@@ -56,7 +61,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void removeActivityUpdatesButtonHandler(View view) {
-        ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, getActivityDetectionPendingIntent())
+        ActivityRecognition.ActivityRecognitionApi.
+                removeActivityUpdates(mGoogleApiClient, getActivityDetectionPendingIntent())
                 .setResultCallback(this);
 
         buttonRequest.setEnabled(true);
@@ -155,6 +161,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.e(TAG, "connection Failed");
 
 
+    }
+
+    @Override
+    public void onResult(@NonNull Status status) {
+
+        if (status.isSuccess()) {
+            Log.e(TAG, "SUCCESS");
+        } else {
+            Log.e(TAG, "Error happen");
+        }
     }
 
     public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
